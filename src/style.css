@@ -1,0 +1,430 @@
+/* Reset styles */
+html {
+  line-height: 1.15;
+  /* 1 */
+  -webkit-text-size-adjust: 100%;
+  /* 2 */
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  display: block;
+}
+
+h1 {
+  font-size: 2em;
+  margin: 0 0 20px;
+}
+
+hr {
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
+  /* 1 */
+  height: 0;
+  /* 1 */
+  overflow: visible;
+  /* 2 */
+}
+
+pre {
+  font-family: monospace, monospace;
+  /* 1 */
+  font-size: 1em;
+  /* 2 */
+}
+
+a {
+  background-color: transparent;
+}
+
+abbr[title] {
+  border-bottom: none;
+  /* 1 */
+  text-decoration: underline;
+  /* 2 */
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+  /* 2 */
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+code,
+kbd,
+samp {
+  font-family: monospace, monospace;
+  /* 1 */
+  font-size: 1em;
+  /* 2 */
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+img {
+  border-style: none;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  /* 1 */
+  font-size: 100%;
+  /* 1 */
+  line-height: 1.15;
+  /* 1 */
+  margin: 0;
+  /* 2 */
+}
+
+button,
+input {
+  /* 1 */
+  overflow: visible;
+}
+
+button,
+select {
+  /* 1 */
+  text-transform: none;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+}
+
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+button:-moz-focusring,
+[type="button"]:-moz-focusring,
+[type="reset"]:-moz-focusring,
+[type="submit"]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+legend {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  /* 1 */
+  color: inherit;
+  /* 2 */
+  display: table;
+  /* 1 */
+  max-width: 100%;
+  /* 1 */
+  padding: 0;
+  /* 3 */
+  white-space: normal;
+  /* 1 */
+}
+
+progress {
+  vertical-align: baseline;
+}
+
+textarea {
+  overflow: auto;
+}
+
+[type="checkbox"],
+[type="radio"] {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  /* 1 */
+  padding: 0;
+  /* 2 */
+}
+
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+[type="search"] {
+  -webkit-appearance: textfield;
+  /* 1 */
+  outline-offset: -2px;
+  /* 2 */
+}
+
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  /* 1 */
+  font: inherit;
+  /* 2 */
+}
+
+details {
+  display: block;
+}
+
+summary {
+  display: list-item;
+}
+
+template {
+  display: none;
+}
+
+[hidden] {
+  display: none;
+}
+
+html {
+  font-size: 14px;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  border: none;
+}
+
+body {
+  background-color: #fff;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+}
+
+h2 {
+  font-size: 1.7rem;
+  margin: 20px 0 10px;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+h1, h2, h3 {
+  text-shadow: 1px 1px 1px #e6e6e6;
+}
+
+table {
+  font-weight: 500;
+}
+
+td.name, td.corner, td.swell, td.wind-time, .sf-table tr:first-child td.energy, td:first-child {
+  font-weight: bold;
+}
+
+.letters, .wind tr:nth-child(4) td:not(:first-child) {
+  font-size: 0.85rem;
+}
+
+.wrapper {
+  width: 100%;
+}
+
+table, td {
+  display: block;
+  font-size: 1rem;
+}
+
+table {
+  margin-bottom: 20px;
+  -webkit-box-shadow: 2px 2px 5px -1px #d4d4d4;
+          box-shadow: 2px 2px 5px -1px #d4d4d4;
+  display: table;
+}
+
+tr {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+td {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  width: 50px;
+  padding: 5px;
+  text-align: center;
+}
+
+.msw {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.msw .wrap {
+  margin-right: 30px;
+}
+
+.arrow {
+  width: 10px;
+  margin: 0 auto;
+  -webkit-transform-origin: center;
+          transform-origin: center;
+}
+
+td {
+  width: 30px;
+}
+
+td:first-child, .legend td {
+  width: 50px;
+}
+
+td.swell {
+  width: 105px;
+}
+
+td.size {
+  width: 45px;
+}
+
+.energy, .tide td {
+  width: 60px;
+}
+
+td.name {
+  width: 80px;
+}
+
+tr:not(:first-child) td, .tide tr td, td.wind-time, .legend td {
+  border-right: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+}
+
+td.corner {
+  border: 1px solid #000;
+}
+
+tr.top td {
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+
+tr:last-child td {
+  border-bottom: 1px solid #000;
+}
+
+tr td:last-child, .msw td:nth-child(4), .msw td:nth-child(7), .sf-table td:nth-child(4), .sf-table td:nth-child(7), .sf-table td:nth-child(10), .sf-table td:nth-child(13), td.swell {
+  border-right: 1px solid #000;
+}
+
+tr td:first-child {
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+}
+
+.tide tr:first-child td {
+  border-top: 1px solid #000;
+}
+
+.tide td:first-child {
+  border-right: 1px solid #aaa;
+}
+
+.one {
+  background-color: #99ffff;
+}
+
+.two {
+  background-color: #66ffe6;
+}
+
+.thr {
+  background-color: #66ffb3;
+}
+
+.fou {
+  background-color: #66ff80;
+}
+
+.fiv {
+  background-color: #77ff33;
+}
+
+.six {
+  background-color: #bbff33;
+}
+
+.sev {
+  background-color: #ffff33;
+}
+
+.eig {
+  background-color: #ffdd33;
+}
+
+.nin {
+  background-color: #ffbb33;
+}
+
+.ten {
+  background-color: #ff7733;
+}
+
+@media screen and (min-width: 1024px) {
+  .wrapper {
+    width: 70%;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (min-width: 1440px) {
+  .wrapper {
+    width: 50%;
+    margin: 0 auto;
+  }
+}
+/*# sourceMappingURL=style.css.map */
