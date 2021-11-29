@@ -1,0 +1,32 @@
+{
+  "name": "surf-data-scraper",
+  "version": "0.5.0",
+  "description": "Parsing data from websites to write to a DataBase",
+  "main": "app.js", 
+  "scripts": {
+    "start": "webpack serve --mode=development",
+    "build": "webpack --mode=production"
+  },
+  "author": "Dan Tkachuk",
+  "license": "ISC",
+  "homepage": "",
+  "dependencies": {
+    "core-js": "^3.15.2",
+    "regenerator-runtime": "^0.13.9",
+    "jstransformer-markdown-it": "^2.1.0",
+    "puppeteer": "^10.4.0"
+  },
+  "devDependencies": {
+    "pug": "^3.0.2",
+    "pug-cli": "^1.0.0-alpha6",
+    "@babel/core": "^7.14.8",
+    "@babel/preset-env": "^7.14.8",
+    "babel-loader": "^8.2.2",
+    "css-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.3.2",
+    "mini-css-extract-plugin": "^2.1.0",
+    "webpack": "^5.46.0",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
+  }
+}

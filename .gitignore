@@ -1,0 +1,7 @@
+.jshintrc
+assets/style/*.scss
+assets/style/*.css.map
+.idea
+node_modules
+.cache
+dist
