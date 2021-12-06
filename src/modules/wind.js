@@ -2,7 +2,7 @@
 
 const puppeteer = require('puppeteer');
 
-async function getWind(url) {
+export async function getWind(url, days) {
   try {
     if (url) {
       const browser = await puppeteer.launch();
@@ -83,4 +83,4 @@ async function getWind(url) {
   }
 }
 
-getWind('https://www.windguru.cz/37745');
+// getWind('https://www.windguru.cz/37745');
