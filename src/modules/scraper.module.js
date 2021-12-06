@@ -269,10 +269,12 @@ export async function getData([spotName, region, windUrl, mswUrl, sfUrl]) {
 
   await browser.close();
 
-  const toHtml = pug.renderFile('output/index.pug', forecast);
-  fs.writeFileSync(`output/spots/${spotName}.html`, toHtml);
+  return forecast;
 
-  forecast = JSON.stringify(forecast);
-  fs.writeFileSync(`output/spots/${spotName}.json`, forecast);
+  // const toHtml = pug.renderFile('output/index.pug', forecast);
+  // fs.writeFileSync(`output/spots/${spotName}.html`, toHtml);
+
+  // forecast = JSON.stringify(forecast);
+  // fs.writeFileSync(`output/spots/${spotName}.json`, forecast);
 
 }
