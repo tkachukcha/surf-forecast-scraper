@@ -89,9 +89,8 @@ const {
 //   }
 // }
 
-async function getMsw(url, daysNumber) {
+async function getMsw(url, daysNum) {
   try {
-    const days = daysNum;
     if (url) {
 
       const browser = await puppeteer.launch();
@@ -103,7 +102,7 @@ async function getMsw(url, daysNumber) {
 
       await page.waitForTimeout(1000);
 
-      let msw = await page.evaluate(() => {
+      let msw = await page.evaluate((daysNum) => {
         const body = document.querySelector('.msw-fc.msw-js-forecast');
 
         function getTableElement(num) {
@@ -211,22 +210,14 @@ async function getMsw(url, daysNumber) {
           }
         }
 
-        // const data = {
-        //   [getAnyTableData(2).date]: getAnyTableData(2),
-        //   [getAnyTableData(3).date]: getAnyTableData(3),
-        //   [getAnyTableData(4).date]: getAnyTableData(4),
-        //   [getAnyTableData(5).date]: getAnyTableData(5),
-        //   [getAnyTableData(6).date]: getAnyTableData(6),
-        //   [getAnyTableData(7).date]: getAnyTableData(7),
-        //   [getAnyTableData(8).date]: getAnyTableData(8),
-        // };
-
-        const data = getForecastByNumberofDays(days);
+        const data = getForecastByNumberofDays(daysNum);
 
         return data;
 
-      });
+      }, daysNum);
+
       await browser.close();
+
       return msw;
     } else {
       throw new Error('Нет урла');
@@ -313,9 +304,9 @@ async function getMsw(url, daysNumber) {
 //   }
 // }
 
-async function getData(spotUrls) {
+async function getData(spotUrls, daysNum) {
   // const wind = await getWind(spotUrls[2]);
-  const msw = await getMsw(spotUrls[3], 7);
+  const msw = await getMsw(spotUrls[3], daysNum);
   // const sfCom = await getSfCom(spotUrls[4]);
   let forecast = {
     spotName: spotUrls[0],
@@ -370,6 +361,6 @@ const spots = [
 ];
 
 // writeData(spots[2]);
-getData(spots[2]);
+getData(spots[2], 1);
 
 // КАК ПЕРЕДАТЬ КОЛИЧЕСТВО ДНЕЙ ВНУТРЬ PAGE EVALUATE
