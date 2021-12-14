@@ -2,7 +2,7 @@
 
 const puppeteer = require('puppeteer');
 
-export async function getWind(url, days) {
+async function getWind(url, daysNum) {
   try {
     if (url) {
       const browser = await puppeteer.launch();
@@ -11,38 +11,53 @@ export async function getWind(url, days) {
       await page.goto(url, {
         timeout: 0
       });
-      
+
       await page.waitForTimeout(5000); // Задержка для подгрузки всех данных
 
-      let wind = await page.evaluate(() => {
+      let wind = await page.evaluate((daysNum) => {
 
-        // Get starting index of tomorrow
-  
         let tds = document.querySelectorAll('.tabulka tbody #tabid_0_0_dates td');
         let now = new Date();
         let tomorrow = now.getDay() + 1;
-        let tomorrowColumnIndex = 0;
+
+        // ТУТ НАДО ПОПРАВИТЬ КОСЯК С ДАТОЙ НОЧЬЮ
+        function getDate(now, plusNumDays) {
+          if (now.getHours() < 2) {
+            tomorrow = now.getDay();
+          }
+          const date = (now.getDate() + plusNumDays) + '/' + (now.getMonth() + 1);
+          return date;
+        }
+
+        // Check if it's night time (UTC +3)
+        if (now.getHours() < 2) {
+          tomorrow = now.getDay();
+        }
+
+        // Get starting index of tomorrow
+        let startingColumnIndex = 0;
+
         const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
         do {
-          tomorrowColumnIndex++;
-        } while (tds[tomorrowColumnIndex].innerText.slice(0, 2) !== days[tomorrow]);
-  
-        function getData(id) {
+          startingColumnIndex++;
+        } while (tds[startingColumnIndex].innerText.slice(0, 2) !== days[tomorrow]);
+
+        function getData(id, startingColumnIndex, columnsNum) {
           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td`);
           let data = [];
-          for (let i = tomorrowColumnIndex; i < tomorrowColumnIndex + 10; i++) {
+          for (let i = startingColumnIndex; i < startingColumnIndex + columnsNum; i++) {
             data.push(dataTds[i].innerText);
           }
           return data;
         }
-  
-        function getDirections(id) {
+
+        function getDirections(id, startingColumnIndex, columnsNum) {
           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td span`);
           let data = [];
-          for (let i = tomorrowColumnIndex; i < tomorrowColumnIndex + 10; i++) {
+          for (let i = startingColumnIndex; i < startingColumnIndex + columnsNum; i++) {
             data.push(dataTds[i].getAttribute('title'));
           }
-  
+
           let angle = [];
           let letters = [];
           data.forEach(item => {
@@ -54,25 +69,58 @@ export async function getWind(url, days) {
             angle: angle
           };
         }
-  
-        const speed = getData('tabid_0_0_WINDSPD');
-        const gusts = getData('tabid_0_0_GUST');
-        const swellHeight = getData('tabid_0_0_HTSGW');
-        const swellPeriod = getData('tabid_0_0_PERPW');
-        const windDirections = getDirections('tabid_0_0_SMER');
-        const swellDirections = getDirections('tabid_0_0_DIRPW');
-  
-        return {
-          windSpeed: speed,
-          windGusts: gusts,
-          windAngle: windDirections.angle,
-          windLetters: windDirections.letters,
-          swellHeight: swellHeight,
-          swellPeriod: swellPeriod,
-          swellAngle: swellDirections.angle,
-          swellLetters: swellDirections.letters,
-        };
-      });
+
+        function getOneDayData(startingColumnIndex, daysNum) {
+          let columnsNum = 10;
+          if (daysNum > 3) {
+            columnsNum = 7;
+          }
+
+          if (daysNum && (daysNum > 7 || daysNum <= 0)) {
+            throw new Error('Количество дней должно быть более 0 и менее 8');
+          } else if (daysNum && daysNum < 4) {
+            startingColumnIndex += ((daysNum - 1) * 10);
+          } else if (daysNum && daysNum > 3) {
+            startingColumnIndex += 30 + (daysNum - 4) * 7;
+          }
+
+          // Change number of columns for one day forecast if forecast is more than 3 days away
+
+          const speed = getData('tabid_0_0_WINDSPD', startingColumnIndex, columnsNum);
+          const gusts = getData('tabid_0_0_GUST', startingColumnIndex, columnsNum);
+          const swellHeight = getData('tabid_0_0_HTSGW', startingColumnIndex, columnsNum);
+          const swellPeriod = getData('tabid_0_0_PERPW', startingColumnIndex, columnsNum);
+          const windDirections = getDirections('tabid_0_0_SMER', startingColumnIndex, columnsNum);
+          const swellDirections = getDirections('tabid_0_0_DIRPW', startingColumnIndex, columnsNum);
+
+          return {
+            windSpeed: speed,
+            windGusts: gusts,
+            windAngle: windDirections.angle,
+            windLetters: windDirections.letters,
+            swellHeight: swellHeight,
+            swellPeriod: swellPeriod,
+            swellAngle: swellDirections.angle,
+            swellLetters: swellDirections.letters,
+          };
+        }
+
+        const data = {};
+
+        function getDataForDaysNum(daysNum) {
+          for (i = 0; i < daysNum; i++) {
+            data[getDate(now, i)] = {
+                ...getOneDayData(startingColumnIndex, daysNum),
+              };
+            }
+        }
+
+        getDataForDaysNum(daysNum);
+        
+
+        return data;
+
+      }, daysNum);
       console.log(wind);
       await browser.close();
     } else {
@@ -83,4 +131,4 @@ export async function getWind(url, days) {
   }
 }
 
-// getWind('https://www.windguru.cz/37745');
+getWind('https://www.windguru.cz/37745', 2);

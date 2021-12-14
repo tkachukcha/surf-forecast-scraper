@@ -7,7 +7,7 @@ const {
   get
 } = require('http');
 
-// async function getWind(url) {
+// async function getWind(url, daysNum) {
 //   try {
 //     if (url) {
 //       const browser = await puppeteer.launch();
@@ -19,23 +19,24 @@ const {
 
 //       await page.waitForTimeout(5000); // Задержка для подгрузки всех данных
 
-//       let wind = await page.evaluate(() => {
+//       let wind = await page.evaluate((daysNum) => {
 
 //         // Get starting index of tomorrow
 
 //         let tds = document.querySelectorAll('.tabulka tbody #tabid_0_0_dates td');
 //         let now = new Date();
 //         let tomorrow = now.getDay() + 1;
-//         let tomorrowColumnIndex = 0;
+//         let startingColumnIndex = -1;
 //         const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 //         do {
-//           tomorrowColumnIndex++;
-//         } while (tds[tomorrowColumnIndex].innerText.slice(0, 2) !== days[tomorrow]);
+//           startingColumnIndex++;
+//         } while (tds[startingColumnIndex].innerText.slice(0, 2) !== days[tomorrow]);
+        
 
 //         function getData(id) {
 //           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td`);
 //           let data = [];
-//           for (let i = tomorrowColumnIndex; i < tomorrowColumnIndex + 10; i++) {
+//           for (let i = startingColumnIndex; i < startingColumnIndex + 10; i++) {
 //             data.push(dataTds[i].innerText);
 //           }
 //           return data;
@@ -44,7 +45,7 @@ const {
 //         function getDirections(id) {
 //           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td span`);
 //           let data = [];
-//           for (let i = tomorrowColumnIndex; i < tomorrowColumnIndex + 10; i++) {
+//           for (let i = startingColumnIndex; i < startingColumnIndex + 10; i++) {
 //             data.push(dataTds[i].getAttribute('title'));
 //           }
 
@@ -77,7 +78,7 @@ const {
 //           swellAngle: swellDirections.angle,
 //           swellLetters: swellDirections.letters,
 //         };
-//       });
+//       }, daysNum);
 
 //       await browser.close();
 //       return wind;
@@ -305,7 +306,7 @@ async function getMsw(url, daysNum) {
 // }
 
 async function getData(spotUrls, daysNum) {
-  // const wind = await getWind(spotUrls[2]);
+  // const wind = await getWind(spotUrls[2], daysNum);
   const msw = await getMsw(spotUrls[3], daysNum);
   // const sfCom = await getSfCom(spotUrls[4]);
   let forecast = {
@@ -361,6 +362,4 @@ const spots = [
 ];
 
 // writeData(spots[2]);
-getData(spots[2], 1);
-
-// КАК ПЕРЕДАТЬ КОЛИЧЕСТВО ДНЕЙ ВНУТРЬ PAGE EVALUATE
+getData(spots[2], 5);
