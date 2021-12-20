@@ -7,88 +7,145 @@ const {
   get
 } = require('http');
 
-// async function getWind(url, daysNum) {
-//   try {
-//     if (url) {
-//       const browser = await puppeteer.launch();
-//       const page = await browser.newPage();
+async function getWind(url, daysNum) {
+  try {
+    if (url) {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
 
-//       await page.goto(url, {
-//         timeout: 0
-//       });
+      await page.goto(url, {
+        timeout: 0
+      });
 
-//       await page.waitForTimeout(5000); // Задержка для подгрузки всех данных
+      await page.waitForTimeout(15000); // Timeout to DOM get all the data
 
-//       let wind = await page.evaluate((daysNum) => {
+      let wind = await page.evaluate((daysNum) => {
+        const getDatesArr = () => {
+          let dates = [];
+          tds.forEach(td => {
+            dates.push(+td.innerText.slice(3, 5))
+          });
+          return dates;
+        };
 
-//         // Get starting index of tomorrow
+        const getDaysStartingIndexes = (datesArr, daysNum) => {
+          if (daysNum > 5) {
+            daysNum = 5;
+          }
+          let daysStartingIndexes = [0];
+          let currentDate = datesArr[0]
+          const startingDate = currentDate;
+          const endingDate = startingDate + daysNum + 1;
 
-//         let tds = document.querySelectorAll('.tabulka tbody #tabid_0_0_dates td');
-//         let now = new Date();
-//         let tomorrow = now.getDay() + 1;
-//         let startingColumnIndex = -1;
-//         const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-//         do {
-//           startingColumnIndex++;
-//         } while (tds[startingColumnIndex].innerText.slice(0, 2) !== days[tomorrow]);
-        
+          for (let i = startingDate; i < endingDate; i++) {
+            const ind = datesArr.findIndex(date => date === currentDate + 1)
+            daysStartingIndexes.push(ind);
+            currentDate++;
+          }
+          return daysStartingIndexes;
+        };
 
-//         function getData(id) {
-//           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td`);
-//           let data = [];
-//           for (let i = startingColumnIndex; i < startingColumnIndex + 10; i++) {
-//             data.push(dataTds[i].innerText);
-//           }
-//           return data;
-//         }
+        const getData = (id, startingColumnIndex, columnsNum) => {
+          const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td`);
+          let data = [];
+          for (let i = startingColumnIndex; i < startingColumnIndex + columnsNum; i++) {
+            data.push(dataTds[i].innerText);
+          }
+          return data;
+        };
 
-//         function getDirections(id) {
-//           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td span`);
-//           let data = [];
-//           for (let i = startingColumnIndex; i < startingColumnIndex + 10; i++) {
-//             data.push(dataTds[i].getAttribute('title'));
-//           }
+        const getDirections = (id, startingColumnIndex, columnsNum) => {
+          const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td span`);
+          let data = [];
+          for (let i = startingColumnIndex; i < startingColumnIndex + columnsNum; i++) {
+            data.push(dataTds[i].getAttribute('title'));
+          }
 
-//           let angle = [];
-//           let letters = [];
-//           data.forEach(item => {
-//             letters.push(item.replace(/[^NESW]/g, ''));
-//             angle.push(Math.floor(Number(item.replace(/[^0-9.]/g, ''))));
-//           });
-//           return {
-//             letters: letters,
-//             angle: angle
-//           };
-//         }
+          let angle = [];
+          let letters = [];
+          data.forEach(item => {
+            letters.push(item.replace(/[^NESW]/g, ''));
+            angle.push(Math.floor(Number(item.replace(/[^0-9.]/g, ''))));
+          });
+          return {
+            letters: letters,
+            angle: angle
+          };
+        };
 
-//         const speed = getData('tabid_0_0_WINDSPD');
-//         const gusts = getData('tabid_0_0_GUST');
-//         const swellHeight = getData('tabid_0_0_HTSGW');
-//         const swellPeriod = getData('tabid_0_0_PERPW');
-//         const windDirections = getDirections('tabid_0_0_SMER');
-//         const swellDirections = getDirections('tabid_0_0_DIRPW');
+        const getOneDayData = (startingColumnIndex, columnsNum) => {
 
-//         return {
-//           windSpeed: speed,
-//           windGusts: gusts,
-//           windAngle: windDirections.angle,
-//           windLetters: windDirections.letters,
-//           swellHeight: swellHeight,
-//           swellPeriod: swellPeriod,
-//           swellAngle: swellDirections.angle,
-//           swellLetters: swellDirections.letters,
-//         };
-//       }, daysNum);
+          const speed = getData('tabid_0_0_WINDSPD', startingColumnIndex, columnsNum);
+          const gusts = getData('tabid_0_0_GUST', startingColumnIndex, columnsNum);
+          const swellHeight = getData('tabid_0_0_HTSGW', startingColumnIndex, columnsNum);
+          const swellPeriod = getData('tabid_0_0_PERPW', startingColumnIndex, columnsNum);
+          const windDirections = getDirections('tabid_0_0_SMER', startingColumnIndex, columnsNum);
+          const swellDirections = getDirections('tabid_0_0_DIRPW', startingColumnIndex, columnsNum);
 
-//       await browser.close();
-//       return wind;
-//     } else {
-//       throw new Error('Нет урла');
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
+          return {
+            windSpeed: speed,
+            windGusts: gusts,
+            windAngle: windDirections.angle,
+            windLetters: windDirections.letters,
+            swellHeight: swellHeight,
+            swellPeriod: swellPeriod,
+            swellAngle: swellDirections.angle,
+            swellLetters: swellDirections.letters,
+          };
+        };
+
+        const getAllDaysData = (indexes) => {
+          let data = {};
+          const now = new Date;
+          let today = now.getDate();
+          if (now.getHours() < 2) {
+            today--;
+          }
+          indexes.forEach((index, ind, arr) => {
+            // if (ind !== arr.length - 1) {
+              
+              data[`${today + ind}/${now.getMonth()+1}`] = {
+                ...getOneDayData(index, arr[ind + 1] - index),
+              };
+            // }
+          });
+
+          return data;
+        };
+
+        const tds = document.querySelectorAll('.tabulka tbody #tabid_0_0_dates td');
+        const datesArr = getDatesArr();
+        const daysStartingIndexes = getDaysStartingIndexes(datesArr, daysNum)
+        const data = getAllDaysData(daysStartingIndexes);
+
+        const getTimesArr = () => {
+          let timesArrOne = [];
+          let timesArrTwo = [];
+          for (let i = 3, j = 0; j < 10; i += 2, j++) {
+            timesArrOne.push(`${i}h`);
+          }
+          for (let i = 3, j = 0; j < 7; i += 3, j++) {
+            timesArrTwo.push(`${i}h`);
+          }
+          return [timesArrOne, timesArrTwo];
+        }
+
+        const times = getTimesArr();
+
+        return {
+          times,
+          ...data
+        };
+      }, daysNum);
+      await browser.close();
+      return wind;
+    } else {
+      throw new Error('Нет урла');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function getMsw(url, daysNum) {
   try {
@@ -110,9 +167,8 @@ async function getMsw(url, daysNum) {
           return body.querySelector(`.table-forecast tbody:nth-child(${num})`);
         }
 
-        function getAnyTableData(num) {
-          const table = getTableElement(num);
-          const date = table.querySelector('.tbody-title small').innerText;
+        const getTimes = () => {
+          const table = getTableElement(2);
           const tr = (line) => table.querySelector(`tr:nth-child(${line+2})`);
 
           // Get Time
@@ -120,6 +176,16 @@ async function getMsw(url, daysNum) {
           for (let i = 0; i < 8; i++) {
             time[i] = tr(i).querySelector('td:first-child small').innerText.replace(/\s+/g, '');
           }
+
+          return time;
+
+        }
+
+        function getAnyTableData(num) {
+          const table = getTableElement(num);
+          const date = table.querySelector('.tbody-title small').innerText;
+          const tr = (line) => table.querySelector(`tr:nth-child(${line+2})`);
+
           // Get Tides
           const tideTable = table.querySelector('.msw-tide-tables div:first-child').innerText.trim().replace(/\s+/g, ' ').split(' ');
           const tides = [];
@@ -184,18 +250,18 @@ async function getMsw(url, daysNum) {
           const swellThree = getSwell(10, 11, 12);
 
           return {
-              date,
-              time,
-              tides,
-              swell: [{
-                  ...swellOne
-                },
-                {
-                  ...swellTwo
-                },
-                {
-                  ...swellThree
-                }]
+            date,
+            tides,
+            swell: [{
+                ...swellOne
+              },
+              {
+                ...swellTwo
+              },
+              {
+                ...swellThree
+              }
+            ]
           };
         }
 
@@ -204,21 +270,23 @@ async function getMsw(url, daysNum) {
           if (daysNumber > 7) {
             throw new Error('Количество дней должно быть меньше 8');
           } else {
-          for (let i = 2; i < daysNumber+2; i++) {
-            data[getAnyTableData(i).date] = getAnyTableData(i);
-          }
-          return data;
+            for (let i = 2; i < daysNumber + 2; i++) {
+              data[getAnyTableData(i).date] = getAnyTableData(i);
+            }
+            return data;
           }
         }
 
         const data = getForecastByNumberofDays(daysNum);
+        const times = getTimes();
 
-        return data;
+        return {
+          times,
+          ...data
+        };
 
       }, daysNum);
-
       await browser.close();
-
       return msw;
     } else {
       throw new Error('Нет урла');
@@ -306,14 +374,15 @@ async function getMsw(url, daysNum) {
 // }
 
 async function getData(spotUrls, daysNum) {
-  // const wind = await getWind(spotUrls[2], daysNum);
+  const wind = await getWind(spotUrls[2], daysNum);
   const msw = await getMsw(spotUrls[3], daysNum);
   // const sfCom = await getSfCom(spotUrls[4]);
+
   let forecast = {
     spotName: spotUrls[0],
     region: spotUrls[1],
     msw,
-    // wind,
+    wind,
     // sfCom,
   };
   console.log(forecast);
@@ -362,4 +431,4 @@ const spots = [
 ];
 
 // writeData(spots[2]);
-getData(spots[2], 5);
+getData(spots[2], 1);

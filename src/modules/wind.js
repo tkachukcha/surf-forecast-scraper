@@ -12,46 +12,45 @@ async function getWind(url, daysNum) {
         timeout: 0
       });
 
-      await page.waitForTimeout(5000); // Задержка для подгрузки всех данных
+      await page.waitForTimeout(15000); // Timeout to DOM get all the data
 
       let wind = await page.evaluate((daysNum) => {
+        const getDatesArr = () => {
+          let dates = [];
+          tds.forEach(td => {
+            dates.push(+td.innerText.slice(3, 5))
+          });
+          return dates;
+        };
 
-        let tds = document.querySelectorAll('.tabulka tbody #tabid_0_0_dates td');
-        let now = new Date();
-        let tomorrow = now.getDay() + 1;
 
-        // ТУТ НАДО ПОПРАВИТЬ КОСЯК С ДАТОЙ НОЧЬЮ
-        function getDate(now, plusNumDays) {
-          if (now.getHours() < 2) {
-            tomorrow = now.getDay();
+        const getDaysStartingIndexes = (datesArr, daysNum) => {
+          if (daysNum > 5) {
+            daysNum = 5;
           }
-          const date = (now.getDate() + plusNumDays) + '/' + (now.getMonth() + 1);
-          return date;
-        }
+          let daysStartingIndexes = [0];
+          let currentDate = datesArr[0]
+          const startingDate = currentDate;
+          const endingDate = startingDate + daysNum + 1;
 
-        // Check if it's night time (UTC +3)
-        if (now.getHours() < 2) {
-          tomorrow = now.getDay();
-        }
+          for (let i = startingDate; i < endingDate; i++) {
+            const ind = datesArr.findIndex(date => date === currentDate + 1)
+            daysStartingIndexes.push(ind);
+            currentDate++;
+          }
+          return daysStartingIndexes;
+        };
 
-        // Get starting index of tomorrow
-        let startingColumnIndex = 0;
-
-        const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-        do {
-          startingColumnIndex++;
-        } while (tds[startingColumnIndex].innerText.slice(0, 2) !== days[tomorrow]);
-
-        function getData(id, startingColumnIndex, columnsNum) {
+        const getData = (id, startingColumnIndex, columnsNum) => {
           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td`);
           let data = [];
           for (let i = startingColumnIndex; i < startingColumnIndex + columnsNum; i++) {
             data.push(dataTds[i].innerText);
           }
           return data;
-        }
+        };
 
-        function getDirections(id, startingColumnIndex, columnsNum) {
+        const getDirections = (id, startingColumnIndex, columnsNum) => {
           const dataTds = document.querySelectorAll(`.tabulka tbody #${id} td span`);
           let data = [];
           for (let i = startingColumnIndex; i < startingColumnIndex + columnsNum; i++) {
@@ -68,23 +67,9 @@ async function getWind(url, daysNum) {
             letters: letters,
             angle: angle
           };
-        }
+        };
 
-        function getOneDayData(startingColumnIndex, daysNum) {
-          let columnsNum = 10;
-          if (daysNum > 3) {
-            columnsNum = 7;
-          }
-
-          if (daysNum && (daysNum > 7 || daysNum <= 0)) {
-            throw new Error('Количество дней должно быть более 0 и менее 8');
-          } else if (daysNum && daysNum < 4) {
-            startingColumnIndex += ((daysNum - 1) * 10);
-          } else if (daysNum && daysNum > 3) {
-            startingColumnIndex += 30 + (daysNum - 4) * 7;
-          }
-
-          // Change number of columns for one day forecast if forecast is more than 3 days away
+        const getOneDayData = (startingColumnIndex, columnsNum) => {
 
           const speed = getData('tabid_0_0_WINDSPD', startingColumnIndex, columnsNum);
           const gusts = getData('tabid_0_0_GUST', startingColumnIndex, columnsNum);
@@ -103,26 +88,49 @@ async function getWind(url, daysNum) {
             swellAngle: swellDirections.angle,
             swellLetters: swellDirections.letters,
           };
-        }
+        };
 
-        const data = {};
-
-        function getDataForDaysNum(daysNum) {
-          for (i = 0; i < daysNum; i++) {
-            data[getDate(now, i)] = {
-                ...getOneDayData(startingColumnIndex, daysNum),
+        const getAllDaysData = (indexes) => {
+          let data = {};
+          const now = new Date;
+          indexes.forEach((index, ind, arr) => {
+            if (ind !== arr.length - 1) {
+              data[`${now.getDate() + ind}/${now.getMonth()+1}`] = {
+                ...getOneDayData(index, arr[ind + 1] - index),
               };
             }
+          });
+
+          return data;
+        };
+
+        const tds = document.querySelectorAll('.tabulka tbody #tabid_0_0_dates td');
+        const datesArr = getDatesArr();
+        const daysStartingIndexes = getDaysStartingIndexes(datesArr, daysNum)
+        const data = getAllDaysData(daysStartingIndexes);
+
+        const getTimesArr = () => {
+          let timesArrOne = [];
+          let timesArrTwo = [];
+          for (let i = 3, j = 0; j < 10; i+=2, j++) {
+              timesArrOne.push(`${i}h`);
+          }
+          for (let i = 3, j = 0; j < 7; i+=3, j++) {
+              timesArrTwo.push(`${i}h`);
+          }
+          return [timesArrOne, timesArrTwo];
         }
 
-        getDataForDaysNum(daysNum);
-        
+        const times = getTimesArr();
 
-        return data;
-
+        return {
+          times,
+          ...data
+        };
       }, daysNum);
       console.log(wind);
       await browser.close();
+      return wind;
     } else {
       throw new Error('Нет урла');
     }
@@ -131,4 +139,4 @@ async function getWind(url, daysNum) {
   }
 }
 
-getWind('https://www.windguru.cz/37745', 2);
+getWind('https://www.windguru.cz/37745', 7);
