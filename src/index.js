@@ -35,7 +35,7 @@ async function getWind(url, daysNum) {
           let daysStartingIndexes = [0];
           let currentDate = datesArr[0]
           const startingDate = currentDate;
-          const endingDate = startingDate + daysNum + 1;
+          const endingDate = startingDate + daysNum;
 
           for (let i = startingDate; i < endingDate; i++) {
             const ind = datesArr.findIndex(date => date === currentDate + 1)
@@ -101,13 +101,14 @@ async function getWind(url, daysNum) {
           if (now.getHours() < 2) {
             today--;
           }
+          // for (let i = 0; i < indexes.length)
           indexes.forEach((index, ind, arr) => {
-            // if (ind !== arr.length - 1) {
+            if (ind !== arr.length - 1) {
               
               data[`${today + ind}/${now.getMonth()+1}`] = {
                 ...getOneDayData(index, arr[ind + 1] - index),
               };
-            // }
+            }
           });
 
           return data;
@@ -134,7 +135,7 @@ async function getWind(url, daysNum) {
 
         return {
           times,
-          ...data
+          forecast: {...data}
         };
       }, daysNum);
       await browser.close();
@@ -267,8 +268,8 @@ async function getMsw(url, daysNum) {
 
         function getForecastByNumberofDays(daysNumber) {
           const data = {};
-          if (daysNumber > 7) {
-            throw new Error('Количество дней должно быть меньше 8');
+          if (daysNumber > 5) {
+            throw new Error('Количество дней должно быть меньше 6');
           } else {
             for (let i = 2; i < daysNumber + 2; i++) {
               data[getAnyTableData(i).date] = getAnyTableData(i);
@@ -282,7 +283,7 @@ async function getMsw(url, daysNum) {
 
         return {
           times,
-          ...data
+          forecast: {...data}
         };
 
       }, daysNum);
@@ -296,94 +297,94 @@ async function getMsw(url, daysNum) {
   }
 }
 
-// async function getSfCom(url) {
-//   try {
-//     if (url) {
+async function getSfCom(url) {
+  try {
+    if (url) {
 
-//       const browser = await puppeteer.launch();
-//       const page = await browser.newPage();
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
 
-//       await page.goto(url, {
-//         timeout: 0
-//       });
+      await page.goto(url, {
+        timeout: 0
+      });
 
-//       await page.waitForTimeout(1000);
+      await page.waitForTimeout(1000);
 
-//       let sfCom = await page.evaluate(() => {
-//         const table = document.querySelector('.forecast-table__basic');
-//         const firstTimeLabel = table.querySelector('tr[data-row-name="time"]').querySelector('td:first-child').innerText;
-//         let tdsArr = [];
-//         if (firstTimeLabel === 'AM') {
-//           tdsArr = ['td:nth-child(4)', 'td:nth-child(5)', 'td:nth-child(6)'];
-//         } else if (firstTimeLabel === 'PM') {
-//           tdsArr = ['td:nth-child(3)', 'td:nth-child(4)', 'td:nth-child(5)'];
-//         } else if (firstTimeLabel === 'Night') {
-//           tdsArr = ['td:nth-child(2)', 'td:nth-child(3)', 'td:nth-child(4)'];
-//         }
-//         let energy = [];
-//         tdsArr.forEach(td => {
-//           const query = table.querySelector('tr[data-row-name="energy"]').querySelector(td).innerText;
-//           energy.push(+query);
-//         });
+      let sfCom = await page.evaluate(() => {
+        const table = document.querySelector('.forecast-table__basic');
+        const firstTimeLabel = table.querySelector('tr[data-row-name="time"]').querySelector('td:first-child').innerText;
+        let tdsArr = [];
+        if (firstTimeLabel === 'AM') {
+          tdsArr = ['td:nth-child(4)', 'td:nth-child(5)', 'td:nth-child(6)'];
+        } else if (firstTimeLabel === 'PM') {
+          tdsArr = ['td:nth-child(3)', 'td:nth-child(4)', 'td:nth-child(5)'];
+        } else if (firstTimeLabel === 'Night') {
+          tdsArr = ['td:nth-child(2)', 'td:nth-child(3)', 'td:nth-child(4)'];
+        }
+        let energy = [];
+        tdsArr.forEach(td => {
+          const query = table.querySelector('tr[data-row-name="energy"]').querySelector(td).innerText;
+          energy.push(+query);
+        });
 
-//         let swell = [];
+        let swell = [];
 
-//         tdsArr.forEach(td => {
-//           const query = table.querySelector('tr[data-row-name="wave-height"]').querySelector(td).getAttribute('data-swell-state');
-//           swell.push(query);
-//         });
+        tdsArr.forEach(td => {
+          const query = table.querySelector('tr[data-row-name="wave-height"]').querySelector(td).getAttribute('data-swell-state');
+          swell.push(query);
+        });
 
-//         let swellParsed = [];
+        let swellParsed = [];
 
-//         swell.forEach(item => {
-//           swellParsed.push(JSON.parse(item));
-//         });
+        swell.forEach(item => {
+          swellParsed.push(JSON.parse(item));
+        });
 
-//         swellParsed.forEach(item => {
-//           item.forEach((swelll, index, item) => {
-//             if (swelll !== null) {
-//               console.log(swelll.angle);
-//               swelll.angle += 180;
-//             } else {
-//               item[index] = {
-//                 "period": '',
-//                 "angle": '',
-//                 "letters": '',
-//                 "height": ''
-//               };
-//             }
-//           });
-//         });
+        swellParsed.forEach(item => {
+          item.forEach((swelll, index, item) => {
+            if (swelll !== null) {
+              console.log(swelll.angle);
+              swelll.angle += 180;
+            } else {
+              item[index] = {
+                "period": '',
+                "angle": '',
+                "letters": '',
+                "height": ''
+              };
+            }
+          });
+        });
 
-//         return {
-//           time: ['AM', 'PM', 'Night'],
-//           energy,
-//           swell: swellParsed,
-//         };
+        return {
+          time: ['AM', 'PM', 'Night'],
+          energy,
+          swell: swellParsed,
+        };
 
-//       });
+      });
 
-//       await browser.close();
-//       return sfCom;
-//     } else {
-//       throw new Error('Нет урла');
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
+      await browser.close();
+      return sfCom;
+    } else {
+      throw new Error('Нет урла');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function getData(spotUrls, daysNum) {
   const wind = await getWind(spotUrls[2], daysNum);
   const msw = await getMsw(spotUrls[3], daysNum);
-  // const sfCom = await getSfCom(spotUrls[4]);
+  const sfCom = await getSfCom(spotUrls[4]);
 
   let forecast = {
     spotName: spotUrls[0],
     region: spotUrls[1],
     msw,
     wind,
-    // sfCom,
+    sfCom,
   };
   console.log(forecast);
   const forecastJson = JSON.stringify(forecast);
@@ -431,4 +432,4 @@ const spots = [
 ];
 
 // writeData(spots[2]);
-getData(spots[2], 1);
+getData(spots[1], 1);
