@@ -8,6 +8,7 @@
   "license": "ISC",
   "homepage": "",
   "dependencies": {
+    "dayjs": "^1.10.7",
     "jstransformer-markdown-it": "^2.1.0",
     "puppeteer": "^10.4.0"
   },
