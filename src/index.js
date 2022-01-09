@@ -3,7 +3,6 @@
 const puppeteer = require('puppeteer');
 const dayjs = require('dayjs');
 const fs = require('fs');
-const pug = require('pug');
 
 async function getData(spotUrls, daysNum) {
   try {
@@ -14,7 +13,12 @@ async function getData(spotUrls, daysNum) {
     // Get dates array according to requested days number
     const dates = [];
     for (let i = 0; i < daysNum; i++) {
-      dates.push(dayjs().add(i, 'day').format('DD/MM'));
+      if (dayjs().hour() < 2) {
+        let now = dayjs().subtract(1, 'day');
+        dates.push(now.add(i, 'day').format('DD-MMM-YYYY'));
+      } else {
+        dates.push(dayjs().add(i, 'day').format('DD-MMM-YYYY'));
+      }
     }
 
     // Open browser
@@ -146,17 +150,9 @@ async function getData(spotUrls, daysNum) {
 
           const getAllDaysData = (indexes) => {
             let data = {};
-            const now = new Date();
-            let today = now.getDate();
-            if (now.getHours() < 2) {
-              today--;
-            }
-            // for (let i = 0; i < indexes.length)
+            
             indexes.forEach((index, ind, arr) => {
               if (ind !== arr.length - 1) {
-                // data[`${today + ind}/${now.getMonth() + 1}`] = {
-                //   ...getOneDayData(index, arr[ind + 1] - index),
-                // };
                 data[dates[ind]] = {
                   ...getOneDayData(index, arr[ind + 1] - index),
                 };
@@ -196,7 +192,7 @@ async function getData(spotUrls, daysNum) {
         dates
       );
     } else {
-      throw new Error('WindGuru Url is undefined');
+      console.log('WindGuru Url is undefined');
     }
 
     // MSW: check if URL is available and get data
@@ -237,7 +233,6 @@ async function getData(spotUrls, daysNum) {
 
           function getAnyTableData(num) {
             const table = getTableElement(num);
-            // const date = table.querySelector('.tbody-title small').innerText;
             const tr = (line) =>
               table.querySelector(`tr:nth-child(${line + 2})`);
 
@@ -333,7 +328,6 @@ async function getData(spotUrls, daysNum) {
           function getForecastByNumberofDays(daysNumber) {
             const data = {};
             for (let i = 2; i < daysNumber + 2; i++) {
-              // data[getAnyTableData(i).date] = getAnyTableData(i);
               data[dates[i - 2]] = getAnyTableData(i);
             }
             return data;
@@ -351,7 +345,7 @@ async function getData(spotUrls, daysNum) {
         dates
       );
     } else {
-      throw new Error('MSW Url is undefined');
+      console.log('MSW Url is undefined');
     }
 
     // Surf-forecast: check if URL is available and get data
@@ -498,7 +492,7 @@ async function getData(spotUrls, daysNum) {
         dates
       );
     } else {
-      throw new Error('Surf-Forecast url is undefined');
+      console.log('Surf-Forecast url is undefined');
     }
 
     await browser.close();
@@ -506,11 +500,13 @@ async function getData(spotUrls, daysNum) {
     // Organize output data
     const forecast = {};
 
+    // Фиксануть баг, если андефайнд!
+
     dates.forEach((date) => {
       forecast[date] = {
-        msw: msw.forecast[date],
-        wind: wind.forecast[date],
-        sfCom: sfCom.forecast[date],
+        msw: msw ? msw.forecast[date] : undefined,
+        wind: wind ? wind.forecast[date] : undefined,
+        sfCom: sfCom ? sfCom.forecast[date] : undefined,
       };
     });
 
@@ -523,52 +519,19 @@ async function getData(spotUrls, daysNum) {
 
     console.log(data);
 
-    // const timesJson = JSON.stringify(data.times);
-    // fs.writeFileSync('src/api/utils/times.json', timesJson);
-    // const tomorrowJson = JSON.stringify(data.forecast[dates[1]]);
-    // fs.writeFileSync(`output/${data.spotName}-${dates[1]}.json`, tomorrowJson);
-    // fs.writeFileSync(`output/data.json`, tomorrowJson);
-    // const forecastJson = JSON.stringify(data.forecast);
-    // fs.writeFileSync(`output/${data.spotName}-forecast.json`, forecastJson);
+    const tomorrowJson = JSON.stringify(data.forecast[dates[1]]);
+    fs.writeFileSync(`output/history/${data.spotName}/${data.spotName}-${dates[1]}.json`, tomorrowJson);
+    fs.writeFileSync(`output/data.json`, tomorrowJson);
+    const forecastJson = JSON.stringify(data.forecast);
+    fs.writeFileSync(`output/${data.spotName}-forecast.json`, forecastJson);
+    const dataJson = JSON.stringify(data);
+    fs.writeFileSync(`src/api/data.json`, dataJson);
 
     return data;
   } catch (error) {
     console.log(error);
   }
 }
-
-// async function writeData(spots) {
-//   const data = await getData(spots);
-//   const forecastJson = JSON.stringify(data);
-
-//   // Сохраняем старые данные
-
-//   const toHtml = pug.renderFile('src/templates/index.pug', data);
-//   fs.writeFileSync(`output/html/${data.spotName}.html`, toHtml);
-
-//   fs.writeFileSync(`output/${data.spotName}.json`, forecastJson);
-
-//   // const oldData = fs.readFileSync('output/data.json');
-//   // fs.writeFileSync('output/data-backup.json', oldData);
-
-//   // // Чистим файл
-
-//   // fs.writeFileSync('output/data.json', '');
-
-//   // Пишем старое
-
-//   // fs.writeFileSync(`output/data.json`, oldData);
-
-//   // let writer = fs.createWriteStream(`output/${data.spotName}.md`, {
-//   //   flags: 'a'
-//   // });
-
-//   // Добавляем сверху новое
-
-//   // writer.write('\n');
-//   // writer.write('\n');
-//   // writer.write(forecastJson);
-// }
 
 const spots = [
   [
@@ -592,6 +555,12 @@ const spots = [
     'https://magicseaweed.com/Alanya-Surf-Report/4456/',
     'https://www.surf-forecast.com/breaks/Side-West-Beach/forecasts/latest/six_day',
   ],
+  [
+    'Alanya',
+    'Turkey (Mediterranian)',
+    'https://www.windguru.cz/37745',
+    'https://magicseaweed.com/Alanya-Surf-Report/4456/',
+  ],
 ];
 
-getData(spots[1], 3);
+getData(spots[3], 5);
